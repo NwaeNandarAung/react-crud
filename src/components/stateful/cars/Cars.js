@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Car from "../../stateless/car/Car.js";
 import FormAdd from "../form/FormAdd"
+import FormToEdit from '../form/formtoedit/FormToEdit'
 
 class Cars extends Component {
   state = {
@@ -9,7 +10,8 @@ class Cars extends Component {
       { id: 2, brand: "Mercdes", color: "Green", price: 30000 },
       { id: 3, brand: "Mazda", color: "Red", price: 20000 }
     ],
-    lastId: 3
+    lastId: 3,
+    isDataEditing: 0,
   }
   deleteCarHandler = (id) => {
     const index = this.state.mycars.findIndex((car) => {
@@ -44,8 +46,26 @@ class Cars extends Component {
     this.props.closeForm()
   }
 
-  editCarHandler = () => {
-    console.log("You have clicked edit button")
+  updateCarHandler = (id, brand, color, price) => {
+    const index = this.state.mycars.findIndex(index => {
+      return index.id === id;
+    })
+
+    const updateCar = {
+      id,
+      brand,
+      color,
+      price
+    }
+
+    const newCars = [...this.state.mycars]
+    newCars[index] = updateCar
+
+    this.setState({
+      mycars : newCars,
+      isDataEditing : 0
+    })
+
   }
 
   render() {
@@ -63,12 +83,23 @@ class Cars extends Component {
           <tbody>
             {
               this.state.mycars.map((car) => {
-                return (
-                  <Car brand={car.brand} color={car.color} price={car.price}
+                if (this.state.isDataEditing !== car.id) {
+                  return (
+                    <Car brand={car.brand} color={car.color} price={car.price}
+                      key={car.id}
+                      clicDel={() => this.deleteCarHandler(car.id)}
+                      clicEdit={() => this.setState({ isDataEditing: car.id })} />
+                  )
+                } else {
+                  return (
+                    <FormToEdit                      
                     key={car.id}
-                    clicDel={() => this.deleteCarHandler(car.id)}
-                    clicEdit={this.editCarHandler} />
-                )
+                    id={car.id} brand={car.brand} color={car.color} price={car.price}
+                    updateCar={this.updateCarHandler}
+                    />
+                  )
+                }
+
               })
             }
 
