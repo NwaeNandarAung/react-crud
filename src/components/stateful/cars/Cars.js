@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
-import Car from "../../stateless/car/Car.js";
-import FormAdd from "../form/FormAdd"
+import Car from '../../stateless/car/Car.js';
+import FormAdd from '../form/FormAdd'
 import FormToEdit from '../form/formtoedit/FormToEdit'
+import Fade from 'react-reveal/Fade'
 
 class Cars extends Component {
   state = {
-    mycars: [
-      { id: 1, brand: "Toyota", color: "Black", price: 50000 },
-      { id: 2, brand: "Mercdes", color: "Green", price: 30000 },
-      { id: 3, brand: "Mazda", color: "Red", price: 20000 }
-    ],
-    lastId: 3,
+    mycars: localStorage.getItem("newcars") ? JSON.parse(localStorage.getItem("newcars")) : [],
+    lastId: localStorage.getItem("lastid") ? JSON.parse(localStorage.getItem("lastid")) : 0,
     isDataEditing: 0,
   }
   deleteCarHandler = (id) => {
@@ -24,6 +21,8 @@ class Cars extends Component {
     this.setState({
       mycars: newCars
     })
+    localStorage.setItem("newcars", JSON.stringify(newCars))
+
   }
 
   addCarHandler = (brand, color, price) => {
@@ -34,8 +33,8 @@ class Cars extends Component {
       price
     }
 
+    const lastId = this.state.lastId + 1;
     const newCars = [...this.state.mycars];
-
     newCars.push(newCar);
 
     this.setState((prevState) => ({
@@ -43,6 +42,8 @@ class Cars extends Component {
       lastId: prevState.lastId + 1
     }))
 
+    localStorage.setItem("newcars", JSON.stringify(newCars))
+    localStorage.setItem("lastid", JSON.stringify(lastId))
     this.props.closeForm()
   }
 
@@ -62,49 +63,51 @@ class Cars extends Component {
     newCars[index] = updateCar
 
     this.setState({
-      mycars : newCars,
-      isDataEditing : 0
+      mycars: newCars,
+      isDataEditing: 0
     })
+    localStorage.setItem("newcars", JSON.stringify(newCars))
 
   }
 
   render() {
     return (
       <>
-        <table className="table text-center">
-          <thead>
-            <tr className="table-dark">
-              <th>Brand</th>
-              <th>Color</th>
-              <th>Price</th>
-              <th colSpan="2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              this.state.mycars.map((car) => {
-                if (this.state.isDataEditing !== car.id) {
-                  return (
-                    <Car brand={car.brand} color={car.color} price={car.price}
-                      key={car.id}
-                      clicDel={() => this.deleteCarHandler(car.id)}
-                      clicEdit={() => this.setState({ isDataEditing: car.id })} />
-                  )
-                } else {
-                  return (
-                    <FormToEdit                      
-                    key={car.id}
-                    id={car.id} brand={car.brand} color={car.color} price={car.price}
-                    updateCar={this.updateCarHandler}
-                    />
-                  )
-                }
+        <Fade>
+          <table className="table text-center">
+            <thead>
+              <tr className="table-dark">
+                <th>Brand</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th colSpan="2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                this.state.mycars.map((car) => {
+                  if (this.state.isDataEditing !== car.id) {
+                    return (
+                      <Car brand={car.brand} color={car.color} price={car.price}
+                        key={car.id}
+                        clicDel={() => this.deleteCarHandler(car.id)}
+                        clicEdit={() => this.setState({ isDataEditing: car.id })} />
+                    )
+                  } else {
+                    return (
+                      <FormToEdit
+                        key={car.id}
+                        id={car.id} brand={car.brand} color={car.color} price={car.price}
+                        updateCar={this.updateCarHandler}
+                      />
+                    )
+                  }
 
-              })
-            }
-
-          </tbody>
-        </table>
+                })
+              }
+            </tbody>
+          </table>
+        </Fade>
         {
           this.props.isFormOpen && <FormAdd addCar={this.addCarHandler} />
         }
